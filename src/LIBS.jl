@@ -13,7 +13,7 @@ include("convert.jl")
 include("partition.jl")
 include("saha.jl")
 include("intensity.jl")
-include("libs.jl")
 include("doppler.jl")
+include("libs.jl")
 
 end
