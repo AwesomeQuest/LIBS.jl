@@ -3,9 +3,9 @@ module LIBSPlotRecipesExt
 using LIBS
 using Plots
 
-@recipe function f(::Type{<:Union{LIBSStickLine, AbstractVector{LIBSStickLine}}}, sticks::AbstractVector{LIBSStickLine})
+@recipe function f(sticks::AbstractVector{LIBSStickLine})
     seriestype --> :stem
-    xguide --> "Wavelength"
+    xguide --> "Wavelength (nm)"
     yguide --> "Intensity"
     label --> "sticks"
     linecolor --> :steelblue
@@ -13,23 +13,25 @@ using Plots
     markerstrokecolor --> :steelblue
     markershape --> :circle
     markersize --> 3
-
-    [s.wavelength for s in sticks], [s.intensity for s in sticks]
+    x := [s.wavelength for s in sticks]
+    y := [s.intensity for s in sticks]
+    ()
 end
 
-@recipe function f(::Type{<:Union{DopplerGridPoint, AbstractVector{DopplerGridPoint}}}, spectrum::AbstractVector{DopplerGridPoint})
+@recipe function f(spectrum::AbstractVector{DopplerGridPoint})
     seriestype --> :path
-    xguide --> "Wavelength"
+    xguide --> "Wavelength (nm)"
     yguide --> "Intensity"
     label --> "spectrum"
     linecolor --> :crimson
     linewidth --> 2
-
-    [p.wavelength for p in spectrum], [p.intensity for p in spectrum]
+    x := [p.wavelength for p in spectrum]
+    y := [p.intensity for p in spectrum]
+    ()
 end
 
-@recipe function f(::Type{<:Union{SpectrumOverlay, AbstractVector{SpectrumOverlay}}}, so::SpectrumOverlay)
-    xguide --> "Wavelength"
+@recipe function f(so::SpectrumOverlay)
+    xguide --> "Wavelength (nm)"
     yguide --> "Intensity"
 
     @series begin
@@ -40,7 +42,8 @@ end
         markerstrokecolor --> :steelblue
         markershape --> :circle
         markersize --> 3
-        [s.wavelength for s in so.sticks], [s.intensity for s in so.sticks]
+        x := [s.wavelength for s in so.sticks]
+        y := [s.intensity for s in so.sticks]
     end
 
     @series begin
@@ -48,8 +51,10 @@ end
         label --> "spectrum"
         linecolor --> :crimson
         linewidth --> 2
-        [p.wavelength for p in so.spectrum], [p.intensity for p in so.spectrum]
+        x := [p.wavelength for p in so.spectrum]
+        y := [p.intensity for p in so.spectrum]
     end
+    ()
 end
 
 end
