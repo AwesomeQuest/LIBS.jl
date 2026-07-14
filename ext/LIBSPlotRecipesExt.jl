@@ -4,7 +4,7 @@ using LIBS
 using Plots
 
 @recipe function f(sticks::AbstractVector{LIBSStickLine})
-    seriestype --> :stem
+    seriestype := :stem
     xguide --> "Wavelength (nm)"
     yguide --> "Intensity"
     label --> "sticks"
@@ -15,11 +15,10 @@ using Plots
     markersize --> 3
     x := [s.wavelength for s in sticks]
     y := [s.intensity for s in sticks]
-    ()
 end
 
 @recipe function f(spectrum::AbstractVector{DopplerGridPoint})
-    seriestype --> :path
+    seriestype := :path
     xguide --> "Wavelength (nm)"
     yguide --> "Intensity"
     label --> "spectrum"
@@ -27,7 +26,6 @@ end
     linewidth --> 2
     x := [p.wavelength for p in spectrum]
     y := [p.intensity for p in spectrum]
-    ()
 end
 
 @recipe function f(so::SpectrumOverlay)
@@ -35,7 +33,7 @@ end
     yguide --> "Intensity"
 
     @series begin
-        seriestype --> :stem
+        seriestype := :stem
         label --> "sticks"
         linecolor --> :steelblue
         markercolor --> :steelblue
@@ -47,14 +45,13 @@ end
     end
 
     @series begin
-        seriestype --> :path
+        seriestype := :path
         label --> "spectrum"
         linecolor --> :crimson
         linewidth --> 2
         x := [p.wavelength for p in so.spectrum]
         y := [p.intensity for p in so.spectrum]
     end
-    ()
 end
 
 end
