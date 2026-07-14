@@ -222,9 +222,11 @@ end
     end
 
     test_elements = find_available_elements()
-    @testset "NIST validation ($elem)" for elem in test_elements
+    total = length(test_elements)
+    @testset "NIST validation ($elem)" for (i, elem) in enumerate(test_elements)
+        print("\r\e[2KNIST validation [$i/$total] ", lpad(elem, 2), "...")
+        flush(stdout)
         if lowercase(elem) == "h"
-            # H only has 6 NIST lines, partial match is fine
             @test true
             continue
         end
@@ -232,4 +234,5 @@ end
         fixture === nothing && (@test false; continue)
         run_element_test(elem, fixture)
     end
+    println()
 end
