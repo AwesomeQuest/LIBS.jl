@@ -43,3 +43,7 @@ end
 function open_db()
     _DB[]
 end
+
+function _test_fixtures_dir()
+    return @artifact_str("libs_test_data")
+end

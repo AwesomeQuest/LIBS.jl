@@ -1,25 +1,8 @@
 using LIBS
 using Test
 using JSON
-using Artifacts
 
-const LIBS_ROOT = dirname(dirname(pathof(LIBS)))
-function _get_fixtures_dir()
-    toml_path = joinpath(LIBS_ROOT, "Artifacts.toml")
-    in_section = false
-    for line in eachline(toml_path)
-        if startswith(line, "[libs_test_data]")
-            in_section = true
-        elseif startswith(line, "[")
-            in_section = false
-        elseif in_section
-            m = match(r"git-tree-sha1\s*=\s*\"([a-f0-9]+)\"", line)
-            m !== nothing && return artifact_path(Base.SHA1(m[1]))
-        end
-    end
-    error("libs_test_data artifact not found in Artifacts.toml")
-end
-const FIXTURES_DIR = _get_fixtures_dir()
+const FIXTURES_DIR = LIBS._test_fixtures_dir()
 const WL_TOL_NM = 0.01
 
 function load_fixture(elem::AbstractString)
