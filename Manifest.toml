@@ -135,6 +135,9 @@ path = "."
 uuid = "00a7efcc-ab60-48e9-832b-b88caf21d167"
 version = "0.1.0"
 
+    [deps.LIBS.extensions]
+    LIBSPlotRecipesExt = ["Plots"]
+
 [[deps.LibCURL]]
 deps = ["LibCURL_jll", "MozillaCACerts_jll"]
 uuid = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
