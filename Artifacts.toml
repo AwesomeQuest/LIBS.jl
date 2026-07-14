@@ -1,0 +1,13 @@
+[libs_data]
+git-tree-sha1 = "7d75cf9bc317c694701e7046d8e4f22a9c3a2ac1"
+
+    [[libs_data.download]]
+    sha256 = "c9bce9f9cb0a5e0ae6d6f1b085184b456952c352d52d8782bc1535974d9e9cc7"
+    url = "https://github.com/AwesomeQuest/LIBS.jl/releases/download/v0.1.0/libs_data.tar.gz"
+
+[libs_test_data]
+git-tree-sha1 = "bacf2a04f4f092c37c9130a9471e5d753fefd719"
+
+    [[libs_test_data.download]]
+    sha256 = "eb25cc1c0c4ec17e99c8e6ac26d66b39b6ac2cf1adfe4a488adb2f4c48649b12"
+    url = "https://github.com/AwesomeQuest/LIBS.jl/releases/download/v0.1.0/libs_test_data.tar.gz"

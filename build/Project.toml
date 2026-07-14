@@ -1,0 +1,6 @@
+[deps]
+Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
+SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
+
+[compat]
+julia = "1.10"

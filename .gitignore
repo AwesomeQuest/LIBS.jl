@@ -1,0 +1,4 @@
+*.tar.gz
+data/
+test/fixtures/
+libs_data.tar.gz
