@@ -2,9 +2,6 @@ struct SpectrumOverlay
     sticks::Vector{LIBSStickLine}
     spectrum::Vector{DopplerGridPoint}
 end
-Base.getindex(so::SpectrumOverlay, i::Int) = i == 1 ? so.sticks : so.spectrum
-Base.length(::SpectrumOverlay) = 2
-Base.iterate(so::SpectrumOverlay, state=1) = state > 2 ? nothing : (so[state], state + 1)
 
 const WL_UNIT_TO_ANGSTROM = [1.0, 0.1, 0.0001]
 
