@@ -167,11 +167,7 @@ end
         @test isdefined(LIBS, :lte_spectrum_sticks)
         @test isdefined(LIBS, :partition_function)
         @test isdefined(LIBS, :saha_ion_populations)
-        @test isdefined(LIBS, :int_to_roman)
         @test isdefined(LIBS, :roman_to_int)
-        @test LIBS.int_to_roman(1) == "I"
-        @test LIBS.int_to_roman(2) == "II"
-        @test LIBS.int_to_roman(3) == "III"
         @test LIBS.roman_to_int("I") == 1
         @test LIBS.roman_to_int("II") == 2
         @test LIBS.roman_to_int("III") == 3

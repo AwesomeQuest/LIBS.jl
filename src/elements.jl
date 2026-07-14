@@ -34,21 +34,6 @@ function roman_to_int(roman::AbstractString)::Int
     result
 end
 
-function int_to_roman(n::Int)::String
-    n <= 0 && return ""
-    vals = [(1000,"M"),(900,"CM"),(500,"D"),(400,"CD"),
-            (100,"C"),(90,"XC"),(50,"L"),(40,"XL"),
-            (10,"X"),(9,"IX"),(5,"V"),(4,"IV"),(1,"I")]
-    result = ""
-    for (v, s) in vals
-        while n >= v
-            result *= s
-            n -= v
-        end
-    end
-    result
-end
-
 struct SpectrumEntry
     Z::Int
     isotope::Union{Int,Nothing}
