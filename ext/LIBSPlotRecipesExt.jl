@@ -28,20 +28,7 @@ end
     [p.wavelength for p in spectrum], [p.intensity for p in spectrum]
 end
 
-@userplot SpectrumPlot
-
-@recipe function f(sp::SpectrumPlot)
-    args = sp.args
-    if length(args) == 1 && args[1] isa Tuple
-        sticks, spectrum = args[1]
-    elseif length(args) == 2
-        sticks, spectrum = args
-        sticks isa AbstractVector{LIBSStickLine} || error("First argument must be Vector{LIBSStickLine}")
-        spectrum isa AbstractVector{DopplerGridPoint} || error("Second argument must be Vector{DopplerGridPoint}")
-    else
-        error("SpectrumPlot requires (sticks, spectrum) or a tuple thereof")
-    end
-
+@recipe function f(::Type{<:Union{SpectrumOverlay, AbstractVector{SpectrumOverlay}}}, so::SpectrumOverlay)
     xguide --> "Wavelength"
     yguide --> "Intensity"
 
@@ -53,7 +40,7 @@ end
         markerstrokecolor --> :steelblue
         markershape --> :circle
         markersize --> 3
-        [s.wavelength for s in sticks], [s.intensity for s in sticks]
+        [s.wavelength for s in so.sticks], [s.intensity for s in so.sticks]
     end
 
     @series begin
@@ -61,7 +48,7 @@ end
         label --> "spectrum"
         linecolor --> :crimson
         linewidth --> 2
-        [p.wavelength for p in spectrum], [p.intensity for p in spectrum]
+        [p.wavelength for p in so.spectrum], [p.intensity for p in so.spectrum]
     end
 end
 

@@ -5,7 +5,7 @@ using Tables
 
 export open_db, partition_function, ionization_potentials, saha_ion_populations
 export lte_line_intensity, lte_spectrum_sticks, lte_spectrum_data, doppler_spectrum
-export LIBSStickLine, DopplerGridPoint
+export LIBSStickLine, DopplerGridPoint, SpectrumOverlay
 
 include("elements.jl")
 include("db.jl")

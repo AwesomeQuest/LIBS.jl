@@ -1,3 +1,11 @@
+struct SpectrumOverlay
+    sticks::Vector{LIBSStickLine}
+    spectrum::Vector{DopplerGridPoint}
+end
+Base.getindex(so::SpectrumOverlay, i::Int) = i == 1 ? so.sticks : so.spectrum
+Base.length(::SpectrumOverlay) = 2
+Base.iterate(so::SpectrumOverlay, state=1) = state > 2 ? nothing : (so[state], state + 1)
+
 const WL_UNIT_TO_ANGSTROM = [1.0, 0.1, 0.0001]
 
 function to_vacuum_angstrom(wl::Real, unit::Int, show_av::Int)
@@ -149,7 +157,7 @@ function lte_spectrum_data(spectra::AbstractString, temp_eV::Real, eden::Real, r
         composition=composition, int_scale=int_scale, min_rel_int=min_rel_int,
         unit=unit, show_av=show_av, low_wl=low_wl, upp_wl=upp_wl, db=db, kwargs...)
     spectrum = doppler_spectrum(sticks, resolution)
-    return (sticks, spectrum)
+    return SpectrumOverlay(sticks, spectrum)
 end
 
 function lte_spectrum_sticks(db::LIBSDB, spectra::AbstractString, temp_eV::Real, eden::Real; kwargs...)
