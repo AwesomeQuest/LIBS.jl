@@ -103,11 +103,6 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
                 continue
             end
 
-            int_rel = _v(row.int_rel_calc, 0.0)
-            if min_rel_int !== nothing && int_rel < min_rel_int
-                continue
-            end
-
             intensity = lte_line_intensity(row, saha, temp_eV; int_scale=int_scale, abundance=abundance)
             intensity <= 0 && continue
 
@@ -135,6 +130,16 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
         end
     end
 
+    if min_rel_int !== nothing && min_rel_int > 0
+        max_per_charge = Dict{Int,Float64}()
+        for s in sticks
+            cur = get(max_per_charge, s.spectr_charge, 0.0)
+            if s.intensity > cur
+                max_per_charge[s.spectr_charge] = s.intensity
+            end
+        end
+        filter!(s -> s.intensity >= min_rel_int * get(max_per_charge, s.spectr_charge, 0.0), sticks)
+    end
     sort!(sticks, by=s -> s.wavelength)
     sticks
 end
