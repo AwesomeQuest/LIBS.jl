@@ -124,7 +124,7 @@ $$I_{ul} \propto (E_u - E_l)^i\,
    \exp\!\left(-\frac{E_u}{k_B T}\right)\,
    \frac{n_z}{Z_z}$$
 
-where $i = \text{int\_scale}$ (0 or 1).  If the Einstein A-value is unavailable,
+where `int_scale` is 0 or 1.  If the Einstein A-value is unavailable,
 $g_u A$ is computed from the line strength $S$:
 
 $$g_u A = S \cdot \frac{2.026 \times 10^{18}}{\lambda^3}
