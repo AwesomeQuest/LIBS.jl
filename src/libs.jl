@@ -201,9 +201,15 @@ Shorthand for:
 
 Keyword arguments are forwarded to `lte_spectrum_sticks`.
 """
-function lte_spectrum_data(spectra::AbstractString, temp, density, resolution::Real; kwargs...)
-    sticks = lte_spectrum_sticks(spectra, temp, density; kwargs...)
+function lte_spectrum_data(spectra::AbstractString, temp, density, resolution::Real; low_wl=nothing, upp_wl=nothing, kwargs...)
+    sticks = lte_spectrum_sticks(spectra, temp, density; low_wl=low_wl, upp_wl=upp_wl, kwargs...)
     spectrum = doppler_spectrum(sticks, resolution)
+    if low_wl !== nothing && !isempty(spectrum)
+        filter!(p -> p.wavelength >= low_wl, spectrum)
+    end
+    if upp_wl !== nothing && !isempty(spectrum)
+        filter!(p -> p.wavelength <= upp_wl, spectrum)
+    end
     SpectrumOverlay(sticks, spectrum)
 end
 
