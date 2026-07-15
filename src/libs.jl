@@ -41,7 +41,7 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
     unit::Integer=0, show_av::Integer=2,
     low_wl=nothing, upp_wl=nothing, db=nothing)
 
-    db = _v(db, open_db())
+    db = unwrap_or(db, open_db())
     entries = parse_spectra(spectra)
     isempty(entries) && return LIBSStickLine[]
 
@@ -107,7 +107,7 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
 
         for row in Tables.rows(tbl)
             row.spectr_charge in charge_set || continue
-            vwl = _v(row.vac_wl_num, 0.0)
+            vwl = unwrap_or(row.vac_wl_num, 0.0)
             if low_wl_A !== nothing && vwl < low_wl_A
                 continue
             end
@@ -118,12 +118,12 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
             intensity = lte_line_intensity(row, saha, temp_eV; int_scale=int_scale, abundance=abundance)
             intensity <= 0 && continue
 
-            calc_wl = _v(row.calc_wl_num, 0.0)
-            vac_wl = _v(row.vac_wl_num, 0.0)
+            calc_wl = unwrap_or(row.calc_wl_num, 0.0)
+            vac_wl = unwrap_or(row.vac_wl_num, 0.0)
 
             if calc_wl > 0
                 wl_angstrom = calc_wl
-            elseif _v(row.wl_in_air, false)
+            elseif unwrap_or(row.wl_in_air, false)
                 wl_angstrom = vac_to_air(vac_wl)
             else
                 wl_angstrom = vac_wl
@@ -133,10 +133,10 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
             wl = wl_angstrom * wl_unit_factor
             push!(sticks, LIBSStickLine(
                 elem, row.spectr_charge, wl, intensity,
-                _v(row.low_conf, ""),
-                _v(row.low_term, ""),
-                _v(row.upp_conf, ""),
-                _v(row.upp_term, "")
+                unwrap_or(row.low_conf, ""),
+                unwrap_or(row.low_term, ""),
+                unwrap_or(row.upp_conf, ""),
+                unwrap_or(row.upp_term, "")
             ))
         end
     end

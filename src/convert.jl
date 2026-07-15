@@ -1,8 +1,9 @@
 # k_B in eV → cm⁻¹: 1 eV = 8065.54393734921 cm⁻¹
 const CM_EV = 8065.54393734921
 
-# Coalesce — return x if not nothing/missing, else default
-_v(x, default) = x === nothing || ismissing(x) ? default : x
+# Return x unless it is nothing or missing, in which case return default.
+# Arrow tables use missing for nulls; this handles both.
+unwrap_or(x, default) = x === nothing || ismissing(x) ? default : x
 
 # Dispersion formula for refractive index of air (Peck & Reeder, 1972).
 # σ = 1/λ in μm⁻¹; nair1 = (n − 1) × 10⁸
