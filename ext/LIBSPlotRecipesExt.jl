@@ -13,8 +13,7 @@ using Plots
     markerstrokecolor := :steelblue
     markershape := :circle
     markersize := 3
-    x := [s.wavelength for s in sticks]
-    y := [s.intensity for s in sticks]
+    [s.wavelength for s in sticks], [s.intensity for s in sticks]
 end
 
 @recipe function f(spectrum::AbstractVector{DopplerGridPoint})
@@ -24,8 +23,7 @@ end
     label --> "spectrum"
     linecolor := :crimson
     linewidth := 2
-    x := [p.wavelength for p in spectrum]
-    y := [p.intensity for p in spectrum]
+    [p.wavelength for p in spectrum], [p.intensity for p in spectrum]
 end
 
 @recipe function f(so::SpectrumOverlay)
@@ -40,8 +38,7 @@ end
         markerstrokecolor := :steelblue
         markershape := :circle
         markersize := 3
-        x := [s.wavelength for s in so.sticks]
-        y := [s.intensity for s in so.sticks]
+        [s.wavelength for s in so.sticks], [s.intensity for s in so.sticks]
     end
 
     @series begin
@@ -49,8 +46,7 @@ end
         label --> "spectrum"
         linecolor := :crimson
         linewidth := 2
-        x := [p.wavelength for p in so.spectrum]
-        y := [p.intensity for p in so.spectrum]
+        [p.wavelength for p in so.spectrum], [p.intensity for p in so.spectrum]
     end
 end
 
