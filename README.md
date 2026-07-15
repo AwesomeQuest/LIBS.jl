@@ -128,7 +128,7 @@ where `int_scale` is 0 or 1.  If the Einstein A-value is unavailable,
 $g_u A$ is computed from the line strength $S$:
 
 $$g_u A = S \cdot \frac{2.026 \times 10^{18}}{\lambda^3}
-   \qquad (\lambda \text{ in } \mathrm{\AA},\ A \text{ in } \text{s}^{-1})$$
+   \qquad (\lambda \text{ in } \text{Å},\ A \text{ in } \text{s}^{-1})$$
 
 ### Doppler broadening
 
