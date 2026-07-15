@@ -64,7 +64,7 @@ sticks = lte_spectrum_sticks("Fe I", 12000.0u"K", 1e17u"cm^-3")
 
 | Function | Description |
 |---|---|
-| `partition_function(db, elem, charge, temp)` | Internal partition function Z(T) = Σ g·exp(−E/k_B T) |
+| `partition_function(db, elem, charge, temp)` | Internal partition function $Z(T) = \sum_i g_i e^{-E_i/k_B T}$ |
 | `ionization_potentials(db, elem)` | Dict mapping charge stage → IP (cm⁻¹) |
 | `saha_ion_populations(db, elem, temp, eden; ...)` | Saha–Boltzmann fractional abundances for each ionisation stage |
 
@@ -94,43 +94,53 @@ Examples passed to `lte_spectrum_sticks` / `lte_spectrum_data`:
 
 ### Partition function
 
-Z(T) = Σ_i g_i · exp(−E_i / k_B T)
+$$Z(T) = \sum_i g_i \exp\!\left(-\frac{E_i}{k_B T}\right)$$
 
 summed over all NIST energy levels with valid energy and degeneracy.
 Temperatures are converted to eV internally; Boltzmann factors use
-the conversion 1 eV = 8065.54 cm⁻¹.
+the conversion $1\ \text{eV} = 8065.54\ \text{cm}^{-1}$.
 
 ### Saha–Boltzmann ionisation
 
 The Saha equation in LTE:
 
-    n_{z+1} · n_e     Z_{z+1}(T) · (2π m_e k_B T)^{3/2}
-    ─────────────  =  ────────────────────────────────── · exp(−χ_z / k_B T)
-        n_z                    Z_z(T) · h³
+$$\frac{n_{z+1}\,n_e}{n_z}
+   = \frac{2\,Z_{z+1}(T)}{Z_z(T)}
+     \left(\frac{2\pi m_e k_B T}{h^2}\right)^{3/2}
+     \exp\!\left(-\frac{\chi_z}{k_B T}\right)$$
 
-In log form with the CGS prefactor S_T = 6.043 × 10²¹ · T_{eV}^{3/2} / n_e:
+In log form with the CGS prefactor $S_T = 6.043 \times 10^{21}\,
+T_{\text{eV}}^{3/2}\,/\,n_e$:
 
-    log(n_{z+1}/n_z) = log(S_T · Z_{z+1}/Z_z) − IP_z / k_B T
+$$\log\frac{n_{z+1}}{n_z}
+   = \log\!\left(S_T\,\frac{Z_{z+1}}{Z_z}\right)
+     - \frac{\text{IP}_z}{k_B T}$$
 
-Populations are normalised so Σ_z n_z = 1.
+Populations are normalised so $\sum_z n_z = 1$.
 
 ### Line intensity
 
-I_{ul} ∝ (E_u − E_l)^i · g_u · A_{ul} · exp(−E_u / k_B T) · n_z / Z_z
+$$I_{ul} \propto (E_u - E_l)^i\,
+   g_u\,A_{ul}\,
+   \exp\!\left(-\frac{E_u}{k_B T}\right)\,
+   \frac{n_z}{Z_z}$$
 
-where i = int_scale (0 or 1).  If the Einstein A-value is unavailable,
-g_u · A is computed from the line strength S:
+where $i = \text{int\_scale}$ (0 or 1).  If the Einstein A-value is unavailable,
+$g_u A$ is computed from the line strength $S$:
 
-    g_u · A = S · 2.026 × 10¹⁸ / λ³    (λ in Å, A in s⁻¹)
+$$g_u A = S \cdot \frac{2.026 \times 10^{18}}{\lambda^3}
+   \qquad (\lambda \text{ in } \mathrm{\AA},\ A \text{ in } \text{s}^{-1})$$
 
 ### Doppler broadening
 
-Each stick line at λ_0 is replaced by a unit-area Gaussian:
+Each stick line at $\lambda_0$ is replaced by a unit-area Gaussian:
 
-    ϕ(λ) = exp(−(λ − λ_0)² / σ²) / (σ√π)
+$$\phi(\lambda) = \frac{1}{\sigma\sqrt{\pi}}\,
+   \exp\!\left(-\frac{(\lambda - \lambda_0)^2}{\sigma^2}\right)$$
 
-with σ = λ_0 / R (R = user-specified resolving power).
-The adaptive grid spans λ_min/max ± 6σ_max with spacing σ_min / 4.
+with $\sigma = \lambda_0 / R$ ($R$ = user-specified resolving power).
+The adaptive grid spans $\lambda_{\min/\max} \pm 6\sigma_{\max}$ with
+spacing $\sigma_{\min} / 4$.
 
 ## Plotting
 
