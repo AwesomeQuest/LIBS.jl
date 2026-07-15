@@ -13,7 +13,7 @@ for i in 1:length(ELEMENTS)
     ELEMENT_TO_Z[lowercase(ELEMENTS[i])] = i
 end
 
-element_symbol(z::Integer) = (1 <= z <= length(ELEMENTS)) ? ELEMENTS[z] : ""
+element_symbol(z::Integer) = ELEMENTS[z]
 
 function element_number(elem::AbstractString)
     s = replace(elem, r"^\d+" => "")
