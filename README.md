@@ -178,4 +178,4 @@ and resolution scaling.
 ## References
 
 - NIST Atomic Spectra Database: https://physics.nist.gov/asd
-- Edlén, B. (1966). The refractive index of air. *Metrologia*, 2(2), 71. — used in `convert.jl` for vacuum-to-air wavelength conversion.
+- Edlén, B. (1966). The refractive index of air. *Metrologia*, 2(2), 71. [doi:10.1088/0026-1394/2/2/002](https://doi.org/10.1088/0026-1394/2/2/002) — used in `convert.jl` for vacuum-to-air wavelength conversion.
