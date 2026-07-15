@@ -2,32 +2,36 @@ module LIBSPlotRecipesExt
 
 using LIBS
 using Plots
+using Unitful: unit, ustrip
 
 @recipe function f(sticks::AbstractVector{LIBSStickLine})
     seriestype := :scatter
-    xguide --> "Wavelength (nm)"
-    yguide --> "Intensity"
     label --> "sticks"
     linecolor := :steelblue
     markercolor := :steelblue
     markerstrokecolor := :steelblue
     markershape := :circle
     markersize := 3
-    getproperty.(sticks, :wavelength), getproperty.(sticks, :intensity)
+    ws = ustrip.(unit(first(sticks).wavelength), getproperty.(sticks, :wavelength))
+    xguide --> "Wavelength ($(unit(first(sticks).wavelength)))"
+    yguide --> "Intensity"
+    ws, getproperty.(sticks, :intensity)
 end
 
 @recipe function f(spectrum::AbstractVector{DopplerGridPoint})
     seriestype := :path
-    xguide --> "Wavelength (nm)"
-    yguide --> "Intensity"
     label --> "spectrum"
     linecolor := :crimson
     linewidth := 2
-    getproperty.(spectrum, :wavelength), getproperty.(spectrum, :intensity)
+    ws = ustrip.(unit(first(spectrum).wavelength), getproperty.(spectrum, :wavelength))
+    xguide --> "Wavelength ($(unit(first(spectrum).wavelength)))"
+    yguide --> "Intensity"
+    ws, getproperty.(spectrum, :intensity)
 end
 
 @recipe function f(so::SpectrumOverlay)
-    xguide --> "Wavelength (nm)"
+    u = unit(first(so.sticks).wavelength)
+    xguide --> "Wavelength ($u)"
     yguide --> "Intensity"
 
     @series begin
@@ -38,7 +42,7 @@ end
         markerstrokecolor := :steelblue
         markershape := :circle
         markersize := 3
-        getproperty.(so.sticks, :wavelength), getproperty.(so.sticks, :intensity)
+        ustrip.(u, getproperty.(so.sticks, :wavelength)), getproperty.(so.sticks, :intensity)
     end
 
     @series begin
@@ -46,7 +50,7 @@ end
         label --> "spectrum"
         linecolor := :crimson
         linewidth := 2
-        getproperty.(so.spectrum, :wavelength), getproperty.(so.spectrum, :intensity)
+        ustrip.(u, getproperty.(so.spectrum, :wavelength)), getproperty.(so.spectrum, :intensity)
     end
 end
 

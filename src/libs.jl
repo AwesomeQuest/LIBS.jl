@@ -3,49 +3,18 @@ struct SpectrumOverlay
     spectrum::Vector{DopplerGridPoint}
 end
 
-# Conversion factors: index by unit code (0=Å, 1=nm, 2=pm)
-const WL_UNIT_TO_ANGSTROM = (1.0, 0.1, 0.0001)
-
-# Convert a wavelength to vacuum Ångströms.
-#
-# unit: 0=Å, 1=nm, 2=pm
-# show_av: 0=auto (air if 2000-10000 Å), 2=force air, 4=force vacuum below 1850 Å
-function to_vacuum_angstrom(wl::Real, unit::Integer, show_av::Integer)
-    unit = clamp(unit, 0, 2)
-    wl_A = wl / WL_UNIT_TO_ANGSTROM[unit + 1]
-    in_air = if show_av == 0
-        2000.0 <= wl_A <= 10000.0
-    elseif show_av == 2
-        true
-    elseif show_av == 4
-        wl_A >= 1850.0
-    else
-        false
-    end
-    in_air ? air_to_vac(wl_A) : wl_A
-end
-
-# Compute stick spectrum for given element(s) at Saha-LTE equilibrium.
-#
-# Returns Vector{LIBSStickLine} sorted by wavelength.
-#
-# Keyword arguments:
-#   composition — Dict{elem => fraction}; uniform if omitted
-#   int_scale — 0=raw, 1=multiply by transition energy
-#   min_rel_int — filter lines with intensity < min_rel_int × per-charge max
-#   unit — 0=Å, 1=nm, 2=pm
-#   show_av — air/vacuum conversion mode (passed to to_vacuum_angstrom)
-#   low_wl, upp_wl — wavelength bounds in the given unit
-function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
+function lte_spectrum_sticks(spectra::AbstractString, temp, density;
     composition=nothing, int_scale::Integer=0, min_rel_int=nothing,
-    unit::Integer=0, show_av::Integer=2,
     low_wl=nothing, upp_wl=nothing, db=nothing)
 
     db = unwrap_or(db, open_db())
     entries = parse_spectra(spectra)
     isempty(entries) && return LIBSStickLine[]
 
-    # Expand bare element names (no charge) to all available charge states
+    temp_eV = to_internal_temp(temp)
+    eden = to_internal_density(density)
+
+    # Expand bare elements to all available charges
     all_entries = SpectrumEntry[]
     for e in entries
         if isempty(e.charges)
@@ -68,7 +37,6 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
         end
     end
 
-    # Pre-compute Saha populations for each unique element
     saha_cache = Dict{String,Dict{Int,Tuple{Float64,Float64}}}()
     for e in all_entries
         elem = element_symbol(e.Z)
@@ -77,7 +45,6 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
         saha_cache[elem] = saha_ion_populations(db, elem, temp_eV, eden; charge_min=min_c, charge_max=max_c)
     end
 
-    # Normalise composition fractions
     elem_names = unique(element_symbol(e.Z) for e in all_entries)
     if composition === nothing
         composition = Dict(name => 1.0 / length(elem_names) for name in elem_names)
@@ -88,10 +55,12 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
         composition = Dict(k => v / total_frac for (k, v) in composition)
     end
 
-    low_wl_A = low_wl === nothing ? nothing : to_vacuum_angstrom(low_wl, unit, show_av)
-    upp_wl_A = upp_wl === nothing ? nothing : to_vacuum_angstrom(upp_wl, unit, show_av)
-    unit_clamped = clamp(unit, 0, 2)
-    wl_unit_factor = WL_UNIT_TO_ANGSTROM[unit_clamped + 1]
+    # Wavelength bounds → internal Å for DB filtering
+    low_wl_A = low_wl === nothing ? nothing : to_internal_length(low_wl)
+    upp_wl_A = upp_wl === nothing ? nothing : to_internal_length(upp_wl)
+
+    # Output unit inferred from input bounds
+    out_unit = output_unit(low_wl, upp_wl)
 
     sticks = LIBSStickLine[]
     for e in all_entries
@@ -130,9 +99,8 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
             end
             wl_angstrom > 0 || continue
 
-            wl = wl_angstrom * wl_unit_factor
             push!(sticks, LIBSStickLine(
-                elem, row.spectr_charge, wl, intensity,
+                elem, row.spectr_charge, wrap_output(wl_angstrom, out_unit), intensity,
                 unwrap_or(row.low_conf, ""),
                 unwrap_or(row.low_term, ""),
                 unwrap_or(row.upp_conf, ""),
@@ -141,7 +109,6 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
         end
     end
 
-    # Per-charge intensity filter
     if min_rel_int !== nothing && min_rel_int > 0
         max_per_charge = Dict{Int,Float64}()
         for s in sticks
@@ -155,15 +122,12 @@ function lte_spectrum_sticks(spectra::AbstractString, temp_eV::Real, eden::Real;
     sort!(sticks)
 end
 
-# Convenience: compute sticks then broaden to a Doppler spectrum.
-# Returns SpectrumOverlay(sticks, doppler_spectrum(...)).
-function lte_spectrum_data(spectra::AbstractString, temp_eV::Real, eden::Real, resolution::Real; kwargs...)
-    sticks = lte_spectrum_sticks(spectra, temp_eV, eden; kwargs...)
+function lte_spectrum_data(spectra::AbstractString, temp, density, resolution::Real; kwargs...)
+    sticks = lte_spectrum_sticks(spectra, temp, density; kwargs...)
     spectrum = doppler_spectrum(sticks, resolution)
     SpectrumOverlay(sticks, spectrum)
 end
 
-# Accept an explicit LIBSDB (bypasses the global singleton).
 lte_spectrum_sticks(db::LIBSDB, args...; kwargs...) =
     lte_spectrum_sticks(args...; db=db, kwargs...)
 

@@ -1,15 +1,19 @@
 struct DopplerGridPoint
-    wavelength::Float64
+    wavelength::Quantity  # internal base: Å
     intensity::Float64
 end
 
-"""Broaden stick spectrum with Gaussian, σ = λ/resolution."""
 function doppler_spectrum(sticks::AbstractVector{LIBSStickLine}, resolution::Real; grid=nothing, pad::Real=6)
     isempty(sticks) && return DopplerGridPoint[]
     resolution > 0 || throw(ArgumentError("resolution must be positive"))
 
-    wl_min = minimum(s.wavelength for s in sticks)
-    wl_max = maximum(s.wavelength for s in sticks)
+    # Work in raw Å for performance
+    wls = [ustrip(s.wavelength) for s in sticks]
+    ints = [s.intensity for s in sticks]
+    out_unit = unit(first(sticks).wavelength)
+
+    wl_min = minimum(wls)
+    wl_max = maximum(wls)
     wl_min <= wl_max || return DopplerGridPoint[]
 
     if grid === nothing
@@ -20,21 +24,24 @@ function doppler_spectrum(sticks::AbstractVector{LIBSStickLine}, resolution::Rea
         wl_hi = wl_max + pad * sigma_edge
         dl = sigma_min / 4
         npoints = max(2, Int(ceil((wl_hi - wl_lo) / dl)))
-        grid = range(wl_lo, wl_hi; length=npoints)
+        grid_A = range(wl_lo, wl_hi; length=npoints)
+    else
+        grid_A = ustrip.(uconvert.(INTERNAL_LENGTH, grid))
     end
 
     sqpi = sqrt(π)
-    intensities = zeros(Float64, length(grid))
-    for s in sticks
-        width = s.wavelength / resolution
+    intensities = zeros(Float64, length(grid_A))
+    for idx in eachindex(wls)
+        wl = wls[idx]
+        intensity = ints[idx]
+        width = wl / resolution
         width2 = width * width
-        # Gaussian truncated at pad × σ to bound convolution cost
-        for (i, wl) in enumerate(grid)
-            if abs(wl - s.wavelength) <= pad * width
-                intensities[i] += s.intensity / width / sqpi * exp(-(s.wavelength - wl)^2 / width2)
+        for (i, gw) in enumerate(grid_A)
+            if abs(gw - wl) <= pad * width
+                intensities[i] += intensity / width / sqpi * exp(-(wl - gw)^2 / width2)
             end
         end
     end
 
-    DopplerGridPoint.(grid, intensities)
+    [DopplerGridPoint(wrap_output(gw, out_unit), intensities[i]) for (i, gw) in enumerate(grid_A)]
 end
