@@ -1,5 +1,5 @@
 const ELEMENTS = [
-    "", "H","He","Li","Be","B","C","N","O","F","Ne",
+    "H","He","Li","Be","B","C","N","O","F","Ne",
     "Na","Mg","Al","Si","P","S","Cl","Ar",
     "K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr",
     "Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe",
@@ -9,11 +9,11 @@ const ELEMENTS = [
 ]
 
 const ELEMENT_TO_Z = Dict{String,Int}()
-for i in 2:length(ELEMENTS)
-    ELEMENT_TO_Z[lowercase(ELEMENTS[i])] = i - 1
+for i in 1:length(ELEMENTS)
+    ELEMENT_TO_Z[lowercase(ELEMENTS[i])] = i
 end
 
-element_symbol(z::Integer) = (1 <= z <= length(ELEMENTS) - 1) ? ELEMENTS[z+1] : ""
+element_symbol(z::Integer) = (1 <= z <= length(ELEMENTS)) ? ELEMENTS[z] : ""
 
 function element_number(elem::AbstractString)
     s = replace(elem, r"^\d+" => "")
