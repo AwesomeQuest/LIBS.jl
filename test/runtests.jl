@@ -1,6 +1,7 @@
 using LIBS
 using Test
 using JSON
+using Unitful
 
 const FIXTURES_DIR = LIBS._test_fixtures_dir()
 const WL_TOL_NM = 0.01
@@ -44,9 +45,9 @@ function get_nist_charge_data(fixture)
 end
 
 function get_our_charge_data(elem::AbstractString)
-    sticks = lte_spectrum_sticks(elem, 1.0, 1e17;
-        unit=1, int_scale=1, min_rel_int=nothing,
-        low_wl=200.0, upp_wl=600.0, show_av=2)
+    sticks = lte_spectrum_sticks(elem, 1.0u"eV", 1e17u"cm^-3";
+        int_scale=1, min_rel_int=nothing,
+        low_wl=200.0u"nm", upp_wl=600.0u"nm")
     result = Dict{Int,Dict}()
     for s in sticks
         if !haskey(result, s.spectr_charge)
@@ -55,7 +56,7 @@ function get_our_charge_data(elem::AbstractString)
                 :intensities => Float64[],
             )
         end
-        push!(result[s.spectr_charge][:wavelengths], s.wavelength)
+        push!(result[s.spectr_charge][:wavelengths], ustrip(u"nm", s.wavelength))
         push!(result[s.spectr_charge][:intensities], s.intensity)
     end
     return result
@@ -192,13 +193,13 @@ end
 
     @testset "partition_function" begin
         db = LIBS.open_db()
-        pf = LIBS.partition_function(db, "Fe", 1, 1.0)
+        pf = LIBS.partition_function(db, "Fe", 1, 1.0u"eV")
         @test pf > 0
     end
 
     @testset "saha_ion_populations" begin
         db = LIBS.open_db()
-        pops = LIBS.saha_ion_populations(db, "Fe", 1.0, 1e17; charge_min=1, charge_max=3)
+        pops = LIBS.saha_ion_populations(db, "Fe", 1.0u"eV", 1e17u"cm^-3"; charge_min=1, charge_max=3)
         @test haskey(pops, 1)
         @test haskey(pops, 2)
         @test haskey(pops, 3)
@@ -207,13 +208,64 @@ end
     end
 
     @testset "lte_spectrum_sticks basic" begin
-        sticks = lte_spectrum_sticks("Fe I", 1.0, 1e17; unit=1, low_wl=200.0, upp_wl=600.0)
+        sticks = lte_spectrum_sticks("Fe I", 1.0u"eV", 1e17u"cm^-3"; low_wl=200.0u"nm", upp_wl=600.0u"nm")
         @test length(sticks) > 0
         for s in sticks
-            @test s.wavelength >= 200.0
-            @test s.wavelength <= 600.0
+            @test ustrip(u"nm", s.wavelength) >= 200.0
+            @test ustrip(u"nm", s.wavelength) <= 600.0
             @test s.spectr_charge == 1
         end
+    end
+
+    @testset "doppler_spectrum" begin
+        sticks = lte_spectrum_sticks("Fe I", 1.0u"eV", 1e17u"cm^-3";
+            low_wl=370.0u"nm", upp_wl=375.0u"nm", min_rel_int=0.1)
+        @test length(sticks) >= 3
+
+        @testset "basic properties" begin
+            spec = doppler_spectrum(sticks, 2000)
+            @test spec isa Vector{DopplerGridPoint}
+            @test length(spec) > length(sticks)
+            for p in spec
+                @test p.wavelength isa Quantity
+                @test p.intensity >= 0
+            end
+            wls = ustrip.(u"nm", getproperty.(spec, :wavelength))
+            @test all(diff(wls) .> 0)
+            stick_wls = ustrip.(u"nm", getproperty.(sticks, :wavelength))
+            @test minimum(wls) < minimum(stick_wls)
+            @test maximum(wls) > maximum(stick_wls)
+            @test unit(first(spec).wavelength) == u"nm"
+        end
+
+        @testset "area conservation" begin
+            spec = doppler_spectrum(sticks, 5000)
+            wls = ustrip.(u"Å", getproperty.(spec, :wavelength))
+            ints = getproperty.(spec, :intensity)
+            dx = wls[2] - wls[1]
+            area = sum(ints[1:end-1] .+ ints[2:end]) * dx / 2
+            total = sum(getproperty.(sticks, :intensity))
+            @test area ≈ total atol = total * 0.05
+        end
+
+        @testset "resolution narrows lines" begin
+            low = doppler_spectrum(sticks, 1000)
+            high = doppler_spectrum(sticks, 5000)
+            @test maximum(getproperty.(high, :intensity)) >
+                  maximum(getproperty.(low, :intensity))
+        end
+    end
+
+    @testset "lte_spectrum_data" begin
+        so = lte_spectrum_data("Fe I", 1.0u"eV", 1e17u"cm^-3", 2000;
+            low_wl=370.0u"nm", upp_wl=380.0u"nm")
+        @test so isa SpectrumOverlay
+        @test length(so.sticks) > 0
+        @test length(so.spectrum) > 0
+        @test length(so.spectrum) > length(so.sticks)
+        @test unit(first(so.sticks).wavelength) == u"nm"
+        @test unit(first(so.spectrum).wavelength) == u"nm"
+        @test all(so.sticks .== sort(so.sticks))
     end
 
     test_elements = find_available_elements()
