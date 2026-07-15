@@ -1,3 +1,4 @@
+# Elements Z=1..118; ELEMENTS[Z] = symbol
 const ELEMENTS = [
     "H","He","Li","Be","B","C","N","O","F","Ne",
     "Na","Mg","Al","Si","P","S","Cl","Ar",
@@ -9,8 +10,8 @@ const ELEMENTS = [
 ]
 
 const ELEMENT_TO_Z = Dict{String,Int}()
-for i in 1:length(ELEMENTS)
-    ELEMENT_TO_Z[lowercase(ELEMENTS[i])] = i
+for (i, sym) in enumerate(ELEMENTS)
+    ELEMENT_TO_Z[lowercase(sym)] = i
 end
 
 element_symbol(z::Integer) = ELEMENTS[z]
@@ -20,13 +21,15 @@ function element_number(elem::AbstractString)
     get(ELEMENT_TO_Z, lowercase(s), 0)
 end
 
-function roman_to_int(roman::AbstractString)::Int
+# Roman numeral → ionization stage (I=1, II=2, ...)
+const ROMAN_VALUES = Dict('I'=>1, 'V'=>5, 'X'=>10, 'L'=>50, 'C'=>100, 'D'=>500, 'M'=>1000)
+
+function roman_to_int(roman::AbstractString)
     r = uppercase(roman)
-    d = Dict('I'=>1,'V'=>5,'X'=>10,'L'=>50,'C'=>100,'D'=>500,'M'=>1000)
     result = 0
     prev = 0
-    for i in length(r):-1:1
-        val = get(d, r[i], 0)
+    for c in reverse(r)
+        val = get(ROMAN_VALUES, c, 0)
         val == 0 && return 0
         result += val < prev ? -val : val
         prev = val
@@ -40,17 +43,19 @@ struct SpectrumEntry
     charges::Vector{Int}
 end
 
-function parse_spectra(input::AbstractString)::Vector{SpectrumEntry}
+# Parse a spectrum specification string (e.g. "Fe I", "Fe I-II", "U", "H I 6563").
+# Returns vector of SpectrumEntry.
+function parse_spectra(input::AbstractString)
     s = strip(input)
     isempty(s) && return SpectrumEntry[]
     lowercase(s) == "all spectra" && return SpectrumEntry[]
 
     entries = SpectrumEntry[]
-
     for group in split(s, r"\s*,\s*")
         group = strip(group)
         isempty(group) && continue
 
+        # Captures: 1=isotope (digits or *), 2=element symbol, 3=charge/range specifier
         m = match(r"^(\d+|\*)?([A-Za-z]+)\s*(.*)$", group)
         m === nothing && continue
         iso_str = m.captures[1]
@@ -63,36 +68,36 @@ function parse_spectra(input::AbstractString)::Vector{SpectrumEntry}
         z == 0 && continue
 
         if isempty(rest)
+            # Bare element: no charge restriction → load all charge states
             push!(entries, SpectrumEntry(z, isotope, Int[]))
             continue
         end
 
         rest = strip(rest)
+        # "n" or "n-m" — numeric charge/range
         if occursin(r"^\d+(-\d*)?$", rest)
             m2 = match(r"^(\d+)(?:-(\d*))?$", rest)
             a = parse(Int, m2[1]) + 1
             b = (m2[2] !== nothing && !isempty(m2[2])) ? parse(Int, m2[2]) + 1 : a
             push!(entries, SpectrumEntry(z, isotope, collect(a:b)))
-        elseif all(c -> c in "IVLCivlc", rest)
-            stage = roman_to_int(rest)
-            stage > 0 && push!(entries, SpectrumEntry(z, isotope, [stage]))
-        elseif all(c -> c == '-', rest)
-            push!(entries, SpectrumEntry(z, isotope, [-length(rest)]))
+        # Roman numeral ionization stage(s), e.g. "I", "II", "I-III"
         elseif occursin(r"^[IVLCivlc]+(-[IVLCivlc]+)?$", rest)
             parts = split(rest, r"\s*-\s*")
-            if length(parts) == 2
+            if length(parts) == 1
+                stage = roman_to_int(rest)
+                stage > 0 && push!(entries, SpectrumEntry(z, isotope, [stage]))
+            elseif length(parts) == 2
                 a = roman_to_int(parts[1])
                 b = roman_to_int(parts[2])
                 if a > 0 && b >= a
                     push!(entries, SpectrumEntry(z, isotope, collect(a:b)))
                 end
             end
-        else
-            push!(entries, SpectrumEntry(z, isotope, Int[]))
+        # String of dashes → negative charge offset, e.g. "---" = stage −3
+        elseif all(c -> c == '-', rest)
+            push!(entries, SpectrumEntry(z, isotope, [-length(rest)]))
         end
     end
 
-    return entries
+    entries
 end
-
-

@@ -3,7 +3,8 @@ struct DopplerGridPoint
     intensity::Float64
 end
 
-function doppler_spectrum(sticks::Vector{LIBSStickLine}, resolution::Real; grid::Union{Vector{Float64},Nothing}=nothing, pad::Real=6)
+"""Broaden stick spectrum with Gaussian, σ = λ/resolution."""
+function doppler_spectrum(sticks::AbstractVector{LIBSStickLine}, resolution::Real; grid=nothing, pad::Real=6)
     isempty(sticks) && return DopplerGridPoint[]
     resolution > 0 || throw(ArgumentError("resolution must be positive"))
 
@@ -27,12 +28,13 @@ function doppler_spectrum(sticks::Vector{LIBSStickLine}, resolution::Real; grid:
     for s in sticks
         width = s.wavelength / resolution
         width2 = width * width
+        # Gaussian truncated at pad × σ to bound convolution cost
         for (i, wl) in enumerate(grid)
-            if abs(wl - s.wavelength) <= 6 * width
+            if abs(wl - s.wavelength) <= pad * width
                 intensities[i] += s.intensity / width / sqpi * exp(-(s.wavelength - wl)^2 / width2)
             end
         end
     end
 
-    [DopplerGridPoint(wl, intensities[i]) for (i, wl) in enumerate(grid)]
+    DopplerGridPoint.(grid, intensities)
 end

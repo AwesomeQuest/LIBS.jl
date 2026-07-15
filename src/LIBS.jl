@@ -1,3 +1,4 @@
+"""Saha-LTE LIBS spectrum calculations using Arrow.jl data tables."""
 module LIBS
 
 using Arrow
