@@ -109,8 +109,7 @@ $$\frac{n_{z+1}\,n_e}{n_z}
      \left(\frac{2\pi m_e k_B T}{h^2}\right)^{3/2}
      \exp\!\left(-\frac{\chi_z}{k_B T}\right)$$
 
-In log form with the CGS prefactor $S_T = 6.043 \times 10^{21}\,
-T_{\text{eV}}^{3/2}\,/\,n_e$:
+In log form with the CGS prefactor $S_T = 6.043 \times 10^{21}\,T_{\text{eV}}^{3/2}\,/\,n_e$:
 
 $$\log\frac{n_{z+1}}{n_z}
    = \log\!\left(S_T\,\frac{Z_{z+1}}{Z_z}\right)
@@ -139,7 +138,7 @@ $$\phi(\lambda) = \frac{1}{\sigma\sqrt{\pi}}\,
    \exp\!\left(-\frac{(\lambda - \lambda_0)^2}{\sigma^2}\right)$$
 
 with $\sigma = \lambda_0 / R$ ($R$ = user-specified resolving power).
-The adaptive grid spans $\lambda_{\min/\max} \pm 6\sigma_{\max}$ with
+The adaptive grid spans $\lambda_{\min}$ to $\lambda_{\max} \pm 6\sigma_{\max}$ with
 spacing $\sigma_{\min} / 4$.
 
 ## Plotting
