@@ -178,6 +178,4 @@ and resolution scaling.
 ## References
 
 - NIST Atomic Spectra Database: https://physics.nist.gov/asd
-- Edlén, B. (1966). The refractive index of air. *Metrologia*, 2(2), 71.
-- Saha, M. N. (1920). Ionisation in the solar chromosphere. *Phil. Mag.*, 40, 472.
-- Griem, H. R. (1997). *Principles of Plasma Spectroscopy*. Cambridge.
+- Edlén, B. (1966). The refractive index of air. *Metrologia*, 2(2), 71. — used in `convert.jl` for vacuum-to-air wavelength conversion.
