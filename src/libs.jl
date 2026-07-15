@@ -204,6 +204,8 @@ Keyword arguments are forwarded to `lte_spectrum_sticks`.
 function lte_spectrum_data(spectra::AbstractString, temp, density, resolution::Real; low_wl=nothing, upp_wl=nothing, kwargs...)
     sticks = lte_spectrum_sticks(spectra, temp, density; low_wl=low_wl, upp_wl=upp_wl, kwargs...)
     spectrum = doppler_spectrum(sticks, resolution)
+    # Clip Doppler-broadened spectrum to the requested wavelength range
+    # so the x-axis matches the original bounds (not the 6σ-padded grid).
     if low_wl !== nothing && !isempty(spectrum)
         filter!(p -> p.wavelength >= low_wl, spectrum)
     end

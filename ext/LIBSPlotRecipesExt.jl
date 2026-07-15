@@ -33,6 +33,8 @@ end
     u = unit(first(so.sticks).wavelength)
     xguide --> "Wavelength ($u)"
     yguide --> "Intensity"
+    stick_wls = ustrip.(u, getproperty.(so.sticks, :wavelength))
+    xlims --> (minimum(stick_wls), maximum(stick_wls))
 
     @series begin
         seriestype := :scatter
@@ -42,7 +44,7 @@ end
         markerstrokecolor := :steelblue
         markershape := :circle
         markersize := 3
-        ustrip.(u, getproperty.(so.sticks, :wavelength)), getproperty.(so.sticks, :intensity)
+        stick_wls, getproperty.(so.sticks, :intensity)
     end
 
     @series begin
